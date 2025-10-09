@@ -1,4 +1,4 @@
-name : Infra for app by terraform
+name : Infra create for app by terraform
 on : [workflow_dispatch]
 jobs:
   DEV-APPLY:
