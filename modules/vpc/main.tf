@@ -11,9 +11,9 @@ resource "aws_subnet" "default_subnets" {
   vpc_id = aws_vpc.main.id
   cidr_block = var.default_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = [
-    name = "web-subnet-${split("-" , var.availability_zones[count.index])[2]}"
-  ]
+  tags = {
+    Name = "default_subnet-${split("-" , var.availability_zones[count.index])[2]}"
+  }
 
 }
 
@@ -33,9 +33,9 @@ resource "aws_subnet" "public" {
   vpc_id = aws_vpc.main.id
   cidr_block = var.public_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = [
-    name = "web-subnet-${split("-" , var.availability_zones[count.index])[2]}"
-  ]
+  tags = {
+    name = "public-subnet-${split("-" , var.availability_zones[count.index])[2]}"
+}
 
 }
 resource "aws_subnet" "web" {
@@ -43,9 +43,9 @@ resource "aws_subnet" "web" {
   vpc_id = aws_vpc.main.id
   cidr_block = var.web_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = [
+  tags = {
     name = "web-subnet-${split("-" , var.availability_zones[count.index])[2]}"
-  ]
+}
 
 }
 resource "aws_subnet" "app" {
@@ -53,9 +53,9 @@ resource "aws_subnet" "app" {
   vpc_id = aws_vpc.main.id
   cidr_block = var.app_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = [
-    name = "web-subnet-${split("-" , var.availability_zones[count.index])[2]}"
-  ]
+  tags = {
+   Name = "app-subnet-${split("-" , var.availability_zones[count.index])[2]}"
+}
 
 }
 
@@ -64,8 +64,9 @@ resource "aws_subnet" "db" {
   vpc_id = aws_vpc.main.id
   cidr_block = var.db_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = [
-    name = "web-subnet-${split("-" , var.availability_zones[count.index])[2]}"
-  ]
+  tags = {
+    Name = "db-subnet-${split("-" , var.availability_zones[count.index])[2]}"
+    
+}
 
 }
