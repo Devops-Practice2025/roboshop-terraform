@@ -7,7 +7,7 @@ vpc = {
   db_subnets         = ["10.10.6.0/24", "10.10.7.0/24"]
   availability_zones = ["us-east-1a", "us-east-1b"]
   default_cidr       = "10.1.0.0/16"
-  default_subnets     = ["10.0.0.0/24", "10.1.1.0/24"]
+  default_subnets     = ["10.1.0.0/24", "10.1.1.0/24"]
 
   
 }
