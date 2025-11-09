@@ -15,6 +15,7 @@ module "vpc" {
 }
 
 module "ec2" {
+    depends_on = [ module.vpc]
   source = "./modules/ec2"
 
   for_each      = var.ec2
@@ -27,6 +28,6 @@ module "ec2" {
   env           = var.env
   bastion_nodes = var.bastion_nodes
   asg = true
-  
+
 
 }
