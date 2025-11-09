@@ -25,7 +25,7 @@ jobs:
           bucket-name: 'karthi-bucket2025' # Replace with your desired unique bucket name
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-1' # Specify your desired AWS region
+          aws-region: ${{secrets.AWS_REGION}} # Specify your desired AWS region
           acl: 'private' # Or other valid ACL values like 'public-read'
 
               
