@@ -16,6 +16,11 @@ ec2 = {
     instance_type = "t3.small"
     allow_port    = 80
     allow_sg_cidr = ["10.10.0.0/24", "10.10.1.0/24"]
+        capacity = {
+      desired = 1
+      max     = 1
+      min     = 1
+    }
   }
     catalogue = {
     subnet_ref    = "app"
