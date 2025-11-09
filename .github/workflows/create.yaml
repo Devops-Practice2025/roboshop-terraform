@@ -1,21 +1,17 @@
 name : Infra create for app by terraform
 on : [workflow_dispatch]
 
-env:
-  TF_LOG: DEBUG
-  TF_LOG_PATH: terraform-debug.log
-
 jobs:
   DEV-APPLY:
     runs-on : ubuntu-latest
     steps: 
-              #installs terraform
-      
+              
+      #install terraform
       - name : Terraform setup
         uses : hashicorp/setup-terraform@v3
         
-              #configure AWS
-
+              
+      #Connect to aws via configure aws in agent
       - name : Configure AWS 
         uses : aws-actions/configure-aws-credentials@v4
         with :
@@ -23,8 +19,8 @@ jobs:
           aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
           aws-region: ${{secrets.AWS_REGION}}
 
-              # checkout code
-
+              
+        # code checkout   
       - name : code checkout
         uses : actions/checkout@v4
       - name : Terraform init
