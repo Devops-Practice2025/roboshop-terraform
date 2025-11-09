@@ -17,7 +17,11 @@ resource "aws_subnet" "default_subnets" {
   }
 
 }
-
+resource "aws_route_table_association" "default" {
+  count          = length(var.default_subnets)
+  subnet_id      = aws_subnet.default_subnets.*.id[count.index]
+  route_table_id = aws_route_table.default-rt.*.id[count.index]
+}
 resource "aws_vpc_peering_connection" "default_to_main" {
     peer_vpc_id = aws_vpc.main.id
     vpc_id      = aws_vpc.default.id
@@ -119,7 +123,7 @@ resource "aws_route_table" "web-rt" {
   }
 
   route {
-    cidr_block                = aws_vpc.default.id
+    cidr_block                = aws_vpc.default.cidr_block
     vpc_peering_connection_id = aws_vpc_peering_connection.default_to_main.id
   }
 
