@@ -1,5 +1,5 @@
 env = "dev"
-bastion_nodes = ["172.31.91.201/32"]
+bastion_nodes = ["10.0.0.0/16"]
 vpc = {
   cidr               = "10.10.0.0/16"
   public_subnets     = ["10.10.0.0/24", "10.10.1.0/24"]
@@ -10,7 +10,7 @@ vpc = {
   default_cidr       = "10.1.0.0/16"
   default_subnets     = ["10.1.1.0/24", "10.1.2.0/24"]  
 }
-ec2 = {
+apps = {
   frontend = {
     subnet_ref    = "web"
     instance_type = "t3.small"
@@ -32,6 +32,34 @@ ec2 = {
       max     = 1
       min     = 1
     }
+  }
+}
+
+
+db = {
+  mongo = {
+    subnet_ref    = "db"
+    instance_type = "t3.small"
+    allow_port    = 27107
+    allow_sg_cidr = ["10.10.4.0/24", "10.10.5.0/24"]
+  }
+  mysql = {
+    subnet_ref    = "db"
+    instance_type = "t3.small"
+    allow_port    = 3306
+    allow_sg_cidr = ["10.10.4.0/24", "10.10.5.0/24"]
+  }
+  rabbitmq = {
+    subnet_ref    = "db"
+    instance_type = "t3.small"
+    allow_port    = 5672
+    allow_sg_cidr = ["10.10.4.0/24", "10.10.5.0/24"]
+  }
+  redis = {
+    subnet_ref    = "db"
+    instance_type = "t3.small"
+    allow_port    = 6379
+    allow_sg_cidr = ["10.10.4.0/24", "10.10.5.0/24"]
   }
 }
   

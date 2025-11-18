@@ -66,6 +66,11 @@ resource "aws_instance" "main" {
   instance_type          = var.instance_type
   subnet_id              = var.subnet_ids[0]
   vpc_security_group_ids = [aws_security_group.allow_tls.id]
+  user_data = base64encode(templatefile("${path.module}/userdata.sh",{
+    role_name = var.name
+    env = var.env
+
+  }))
 
 
   tags = {
