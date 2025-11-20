@@ -3,7 +3,7 @@ on : [workflow_dispatch]
 
 jobs:
   DEV-APPLY:
-    runs-on : ubuntu-latest
+    runs-on : self-hosted
     steps: 
               
       #install terraform
@@ -12,12 +12,12 @@ jobs:
         
               
       #Connect to aws via configure aws in agent
-      - name : Configure AWS 
-        uses : aws-actions/configure-aws-credentials@v4
-        with :
-          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws-region: ${{secrets.AWS_REGION}}
+      # - name : Configure AWS 
+      #   uses : aws-actions/configure-aws-credentials@v4
+      #   with :
+      #     aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+      #     aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+      #     aws-region: ${{secrets.AWS_REGION}}
 
       # - name: Create S3 bucket
       #   uses: aitorres/aws-s3-create-bucket@v1.2.0
