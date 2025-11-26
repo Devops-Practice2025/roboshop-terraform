@@ -74,6 +74,7 @@ resource "aws_launch_template" "main" {
 
 
 resource "aws_autoscaling_group" "main" {
+  count                  = var.asg ? 1:0
   name                = "${var.name}-${var.env}-asg"
   desired_capacity    = var.capacity["desired"]
   max_size            = var.capacity["max"]
@@ -112,7 +113,7 @@ resource "aws_instance" "main" {
 }
 
 resource "aws_route53_record" "instance" {
-  
+  count = var.asg ? 1:0
   zone_id = data.aws_route53_zone.existing.id
   name = "${var.name}.${var.env}"
   type = "A"
@@ -120,8 +121,9 @@ resource "aws_route53_record" "instance" {
   records = [aws_instance.main.*.private_ip[count.index]]
 }
 resource "aws_lb" "main" {
+  count = var.asg ? 1:0
   name               = "${var.name}-${var.env}"
-  internal           = true
+  internal           = var.internal
   load_balancer_type = "application"
   security_groups    = [aws_security_group.load-balancer.*.id[count.index]]
   subnets            = var.subnet_ids
@@ -132,18 +134,20 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "main" {
+  count = var.asg ? 1:0
   name     = "${var.name}-${var.env}"
   port     = var.allow_port
   protocol = "HTTP"
   vpc_id   = var.vpc_id
-}
-resource "aws_lb_target_group" "main" {
-  count    = var.asg ? 1 : 0
-  name     = "${var.name}-${var.env}"
-  port     = var.allow_port
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
-}
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    interval            = 5
+    path                = "/health"
+    timeout             = 3
+  }
+  }
 
 resource "aws_lb_listener" "front_end" {
   count             = var.asg ? 1 : 0

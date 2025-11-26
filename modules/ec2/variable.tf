@@ -9,3 +9,4 @@ variable "bastion_nodes" {}
 variable "capacity" {}
 variable "asg" {}
 variable "vault_token" {}
+variable "internal" { default = null}
