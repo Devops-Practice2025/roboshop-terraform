@@ -49,7 +49,7 @@ resource "aws_launch_template" "main" {
 
 
 resource "aws_autoscaling_group" "main" {
-  count                  = var.asg ? 1:0
+  count               = var.asg ? 1 : 0
   name                = "${var.name}-${var.env}-asg"
   desired_capacity    = var.capacity["desired"]
   max_size            = var.capacity["max"]
@@ -88,7 +88,7 @@ resource "aws_instance" "main" {
 }
 
 resource "aws_route53_record" "instance" {
-  count = var.asg ? 0:1
+  count = var.asg ? 0 : 1
   zone_id = data.aws_route53_zone.existing.id
   name = "${var.name}.${var.env}"
   type = "A"
@@ -124,7 +124,7 @@ resource "aws_security_group" "load-balancer" {
   }
 }
 resource "aws_lb" "main" {
-  count = var.asg ? 1:0
+  count              = var.asg ? 1 : 0
   name               = "${var.name}-${var.env}"
   internal           = var.internal
   load_balancer_type = "application"
@@ -137,7 +137,7 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "main" {
-  count = var.asg ? 1:0
+  count    = var.asg ? 1 : 0
   name     = "${var.name}-${var.env}"
   port     = var.allow_port
   protocol = "HTTP"
@@ -165,7 +165,7 @@ resource "aws_lb_listener" "front_end" {
 }
 
 resource "aws_route53_record" "lb" {
-  count = var.asg ? 1:0
+  count   = var.asg ? 1 : 0
   zone_id = data.aws_route53_zone.existing.id
   name    = "${var.name}.${var.env}"
   type    = "CNAME"

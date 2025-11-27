@@ -33,9 +33,7 @@ module "apps" {
   internal = each.value["lb_internal"]
   lb_subnet_ids    = module.vpc.subnets[each.value["lb_subnet_ref"]]
   allow_lb_sg_cidr = each.value["allow_lb_sg_cidr"]
-  
-
-  }
+    }
 module "db" {
     depends_on = [ module.vpc]
   source = "./modules/ec2"
