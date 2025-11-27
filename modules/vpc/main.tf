@@ -1,56 +1,7 @@
 ## VPC
 ##default
-resource "aws_vpc" "default" {
-    
-cidr_block = var.default_cidr
-tags = {
-  Name = "default-vpc"
-}
-}
-resource "aws_subnet" "default_subnets" {
-  count = length(var.default_subnets)
-  vpc_id = aws_vpc.default.id
-  cidr_block = var.default_subnets[count.index]
-  availability_zone = var.availability_zones[count.index]
-  tags = {
-    Name = "default_subnet-${split("-" , var.availability_zones[count.index])[2]}"
-  }
 
-}
-resource "aws_route_table_association" "default" {
-  count          = length(var.default_subnets)
-  subnet_id      = aws_subnet.default_subnets.*.id[count.index]
-  route_table_id = aws_route_table.default-rt.*.id[count.index]
-}
-resource "aws_vpc_peering_connection" "default_to_main" {
-    peer_vpc_id = aws_vpc.main.id
-    vpc_id      = aws_vpc.default.id
-    auto_accept = true
 
-}
-resource "aws_internet_gateway" "default-igw" {
-  vpc_id = aws_vpc.default.id
-  tags = { Name = "default-igw"}
-}
-
-resource "aws_route_table" "default-rt" {
-  count  = length(var.default_subnets)
-  vpc_id = aws_vpc.default.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.default-igw.id
-  }
-
-  route {
-    cidr_block                = aws_vpc.main.cidr_block
-    vpc_peering_connection_id = aws_vpc_peering_connection.default_to_main.id
-  }
-
-  tags = {
-    Name = "default-rt-${split("-", var.availability_zones[count.index])[2]}"
-  }
-}
 
 ## Main vpc
 resource "aws_vpc" "main" {
@@ -113,8 +64,15 @@ resource "aws_internet_gateway" "main-igw" {
 
 }
 
+##peering
+resource "aws_vpc_peering_connection" "default_to_main" {
+    peer_vpc_id = aws_vpc.main.id
+    vpc_id      = data.aws_vpc.default.id
+    auto_accept = true
+
+}
 ## Route tables
-resource "aws_route_table" "public-rt" {
+resource "aws_route_table" "public" {
   count  = length(var.public_subnets)
   vpc_id = aws_vpc.main.id
 
@@ -124,7 +82,7 @@ resource "aws_route_table" "public-rt" {
   }
 
   route {
-    cidr_block                = aws_vpc.default.cidr_block
+    cidr_block                = var.default_cidr
     vpc_peering_connection_id = aws_vpc_peering_connection.default_to_main.id
   }
 
@@ -133,8 +91,7 @@ resource "aws_route_table" "public-rt" {
   }
 }
 
-
-resource "aws_route_table" "web-rt" {
+resource "aws_route_table" "web" {
   count  = length(var.web_subnets)
   vpc_id = aws_vpc.main.id
 
@@ -144,7 +101,7 @@ resource "aws_route_table" "web-rt" {
   }
 
   route {
-    cidr_block                = aws_vpc.default.cidr_block
+    cidr_block                = var.default_cidr
     vpc_peering_connection_id = aws_vpc_peering_connection.default_to_main.id
   }
 
@@ -153,18 +110,41 @@ resource "aws_route_table" "web-rt" {
   }
 }
 
-resource "aws_eip" "ngw-ip" {
-  count  = length(var.availability_zones)
-  domain = "vpc"
-}
+resource "aws_route_table" "app" {
+  count  = length(var.app_subnets)
+  vpc_id = aws_vpc.main.id
 
-resource "aws_nat_gateway" "main-ngw" {
-  count         = length(var.availability_zones)
-  allocation_id = aws_eip.ngw-ip.*.id[count.index]
-  subnet_id     = aws_subnet.public.*.id[count.index]
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.*.id[count.index]
+  }
+
+  route {
+    cidr_block                = var.default_cidr
+    vpc_peering_connection_id = aws_vpc_peering_connection.main.id
+  }
 
   tags = {
-    Name = "nat-gw-${split("-", var.availability_zones[count.index])[2]}"
+    Name = "app-rt-${split("-", var.availability_zones[count.index])[2]}"
+  }
+}
+
+resource "aws_route_table" "db" {
+  count  = length(var.db_subnets)
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.*.id[count.index]
+  }
+
+  route {
+    cidr_block                = var.default_cidr
+    vpc_peering_connection_id = aws_vpc_peering_connection.main.id
+  }
+
+  tags = {
+    Name = "db-rt-${split("-", var.availability_zones[count.index])[2]}"
   }
 }
 
@@ -180,4 +160,32 @@ resource "aws_route_table_association" "web" {
   count          = length(var.web_subnets)
   subnet_id      = aws_subnet.web.*.id[count.index]
   route_table_id = aws_route_table.web-rt.*.id[count.index]
+}
+
+resource "aws_route_table_association" "app" {
+  count          = length(var.app_subnets)
+  subnet_id      = aws_subnet.app.*.id[count.index]
+  route_table_id = aws_route_table.app.*.id[count.index]
+}
+
+resource "aws_route_table_association" "db" {
+  count          = length(var.db_subnets)
+  subnet_id      = aws_subnet.db.*.id[count.index]
+  route_table_id = aws_route_table.db.*.id[count.index]
+}
+
+###NGW 
+resource "aws_eip" "ngw-ip" {
+  count  = length(var.availability_zones)
+  domain = "vpc"
+}
+
+resource "aws_nat_gateway" "main-ngw" {
+  count         = length(var.availability_zones)
+  allocation_id = aws_eip.ngw-ip.*.id[count.index]
+  subnet_id     = aws_subnet.public.*.id[count.index]
+
+  tags = {
+    Name = "nat-gw-${split("-", var.availability_zones[count.index])[2]}"
+  }
 }

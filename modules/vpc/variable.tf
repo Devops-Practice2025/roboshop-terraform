@@ -6,4 +6,4 @@ variable "app_subnets" {}
 variable "db_subnets" {}
 variable "availability_zones" {}
 variable "default_cidr" {}
-variable "default_subnets" {}
+
