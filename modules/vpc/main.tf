@@ -58,7 +58,7 @@ resource "aws_subnet" "db" {
 }
 
 #igw
-resource "aws_internet_gateway" "main-igw" {
+resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
   tags = { Name = "main-igw"}
 
@@ -78,7 +78,7 @@ resource "aws_route_table" "public" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main-igw.id
+    gateway_id = aws_internet_gateway.main.id
   }
 
   route {
@@ -97,7 +97,7 @@ resource "aws_route_table" "web" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main-ngw.*.id[count.index]
+    nat_gateway_id = aws_nat_gateway.main.*.id[count.index]
   }
 
   route {
@@ -121,7 +121,7 @@ resource "aws_route_table" "app" {
 
   route {
     cidr_block                = var.default_cidr
-    vpc_peering_connection_id = aws_vpc_peering_connection.main.id
+    vpc_peering_connection_id = aws_vpc_peering_connection.default_to_main.id
   }
 
   tags = {
@@ -140,7 +140,7 @@ resource "aws_route_table" "db" {
 
   route {
     cidr_block                = var.default_cidr
-    vpc_peering_connection_id = aws_vpc_peering_connection.main.id
+    vpc_peering_connection_id = aws_vpc_peering_connection.default_to_main.id
   }
 
   tags = {
@@ -153,13 +153,13 @@ resource "aws_route_table" "db" {
 resource "aws_route_table_association" "public" {
   count          = length(var.public_subnets)
   subnet_id      = aws_subnet.public.*.id[count.index]
-  route_table_id = aws_route_table.public-rt.*.id[count.index]
+  route_table_id = aws_route_table.public.*.id[count.index]
 }
 
 resource "aws_route_table_association" "web" {
   count          = length(var.web_subnets)
   subnet_id      = aws_subnet.web.*.id[count.index]
-  route_table_id = aws_route_table.web-rt.*.id[count.index]
+  route_table_id = aws_route_table.web.*.id[count.index]
 }
 
 resource "aws_route_table_association" "app" {
@@ -180,7 +180,7 @@ resource "aws_eip" "ngw-ip" {
   domain = "vpc"
 }
 
-resource "aws_nat_gateway" "main-ngw" {
+resource "aws_nat_gateway" "main" {
   count         = length(var.availability_zones)
   allocation_id = aws_eip.ngw-ip.*.id[count.index]
   subnet_id     = aws_subnet.public.*.id[count.index]
