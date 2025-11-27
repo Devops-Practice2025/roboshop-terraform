@@ -1,9 +1,11 @@
-
 data "aws_vpc" "default" {
-#    count   = var.use_default_vpc ? 1 : 0
-  default = true
+  filter {
+    name   = "tag:default-vpc"
+    values = ["default"]
+  }
 }
-# variable "use_default_vpc" {
-#     default = false
-  
-# }
+
+output "default_vpc_id" {
+  value =  try(data.aws_vpc.default.id, "no-default-vpc")
+}
+
