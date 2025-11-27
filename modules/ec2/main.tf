@@ -88,7 +88,7 @@ resource "aws_instance" "main" {
 }
 
 resource "aws_route53_record" "instance" {
-  count = var.asg ? 1:0
+  count = var.asg ? 0:1
   zone_id = data.aws_route53_zone.existing.id
   name = "${var.name}.${var.env}"
   type = "A"
