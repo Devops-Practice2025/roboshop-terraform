@@ -66,8 +66,9 @@ resource "aws_internet_gateway" "main" {
 
 ##peering
 resource "aws_vpc_peering_connection" "default_to_main" {
+    
     peer_vpc_id = aws_vpc.main.id
-    vpc_id      = data.aws_vpc.default.id
+    vpc_id      = try(data.aws_vpc.default.id, null)
     auto_accept = true
 
 }
