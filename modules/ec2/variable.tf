@@ -10,3 +10,5 @@ variable "capacity" {}
 variable "asg" {}
 variable "vault_token" {}
 variable "internal" { default = null}
+variable "allow_lb_sg_cidr" {}
+variable "lb_subnet_ids" {}

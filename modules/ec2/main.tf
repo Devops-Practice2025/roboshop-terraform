@@ -31,31 +31,6 @@ resource "aws_security_group" "allow_tls" {
 }
 
 
-resource "aws_security_group" "load-balancer" {
-  name        = "${var.name}-${var.env}-alb-sg"
-  description = "${var.name}-${var.env}-alb-sg"
-  vpc_id      = var.vpc_id
-
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "TCP"
-    cidr_blocks = var.allow_sg_cidr
-  }
-  
-
-  tags = {
-    Name = "${var.name}-${var.env}-alb-sg"
-  }
-}
 resource "aws_launch_template" "main" {
   count                  = var.asg ? 1:0
   name                   = "${var.name}-${var.env}-lt"
@@ -120,13 +95,41 @@ resource "aws_route53_record" "instance" {
   ttl = 10
   records = [aws_instance.main.*.private_ip[count.index]]
 }
+
+
+##lb
+resource "aws_security_group" "load-balancer" {
+  count       = var.asg ? 1 : 0
+  name        = "${var.name}-${var.env}-alb-sg"
+  description = "${var.name}-${var.env}-alb-sg"
+  vpc_id      = var.vpc_id
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "TCP"
+    cidr_blocks = var.allow_lb_sg_cidr
+  }
+
+  tags = {
+    Name = "${var.name}-${var.env}-alb-sg"
+  }
+}
 resource "aws_lb" "main" {
   count = var.asg ? 1:0
   name               = "${var.name}-${var.env}"
   internal           = var.internal
   load_balancer_type = "application"
   security_groups    = [aws_security_group.load-balancer.*.id[count.index]]
-  subnets            = var.subnet_ids
+  subnets            = var.lb_subnet_ids
 
   tags = {
     Environment = "${var.name}-${var.env}"
@@ -159,4 +162,12 @@ resource "aws_lb_listener" "front_end" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.main.*.arn[count.index]
   }
+}
+
+resource "aws_route53_record" "lb" {
+  zone_id = aws_route53_zone.existing.id
+  name    = "${var.name}.${var.env}"
+  type    = "CNAME"
+  ttl     = 10
+  records = [aws_lb.main.dns_name]
 }
